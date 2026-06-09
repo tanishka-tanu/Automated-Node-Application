@@ -6,45 +6,30 @@ pool:
 
 steps:
 
-# ---------------- CI PART ----------------
-- task: NodeTool@0
-  inputs:
-    versionSpec: '18.x'
-  displayName: 'Install Node.js'
-
-- script: |
-    npm install
-  displayName: 'Install dependencies'
-
-- script: |
-    echo "Build successful 🚀"
-  displayName: 'CI Done'
-
-# ---------------- CD PART ----------------
 - task: SSH@0
   inputs:
     sshEndpoint: 'azure-vm-ssh'
     runOptions: 'commands'
     commands: |
-      echo "Deploying 🚀"
+      echo "🚀 Starting Deployment"
 
-      # move to safe folder
-      cd /home/azureuser || exit
+      # go to home directory
+      cd ~
 
-      # remove old project
+      # remove old code
       rm -rf Automated-Node-Application
 
-      # clone fresh repo (PUBLIC so OK)
+      # get latest code
       git clone https://github.com/tanishka-tanu/Automated-Node-Application.git
 
       cd Automated-Node-Application
 
-      # rebuild docker
+      # build docker image
       sudo docker build -t node-devops-app .
 
-      # stop old container
+      # stop old container (ignore error if none)
       sudo docker rm -f $(sudo docker ps -aq) || true
 
       # run new container
       sudo docker run -d -p 3000:3000 node-devops-app
-  displayName: 'Deploy to Azure VM'
+  displayName: "Deploy Node App to Azure VM"
