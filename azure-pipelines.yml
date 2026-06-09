@@ -6,30 +6,28 @@ pool:
 
 steps:
 
+# 1️⃣ Copy code to VM (NO GIT NEEDED)
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'azure-vm-ssh'
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '**'
+    targetFolder: '/home/tanu/app'
+  displayName: "Copy files to VM"
+
+# 2️⃣ Run Docker on VM
 - task: SSH@0
   inputs:
     sshEndpoint: 'azure-vm-ssh'
     runOptions: 'commands'
     commands: |
-      echo "🚀 Starting Deployment"
+      echo "🚀 Deploying App"
 
-      # go to home directory
-      cd ~
+      cd /home/tanu/app
 
-      # remove old code
-      rm -rf Automated-Node-Application
-
-      # get latest code
-      git clone https://github.com/tanishka-tanu/Automated-Node-Application.git
-
-      cd Automated-Node-Application
-
-      # build docker image
       sudo docker build -t node-devops-app .
 
-      # stop old container (ignore error if none)
       sudo docker rm -f $(sudo docker ps -aq) || true
 
-      # run new container
       sudo docker run -d -p 3000:3000 node-devops-app
-  displayName: "Deploy Node App to Azure VM"
+  displayName: "Run Docker on VM"
