@@ -6,29 +6,28 @@ pool:
 
 steps:
 
+# 1️⃣ COPY CODE FROM AZURE PIPELINE TO VM
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'azure-vm-ssh'
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '**'
+    targetFolder: '/home/tanu/app'
+  displayName: "Copy code to VM"
+
+# 2️⃣ BUILD + RUN ON VM
 - task: SSH@0
   inputs:
     sshEndpoint: 'azure-vm-ssh'
     runOptions: 'commands'
     commands: |
-      echo "🚀 Deploy started"
+      echo "🚀 Deploying App"
 
-      cd ~
+      cd /home/tanu/app
 
-      # remove old project
-      rm -rf app
-
-      # clone fresh repo
-      git clone https://github.com/tanishka-tanu/Automated-Node-Application.git app
-
-      cd app
-
-      # build docker image
       sudo docker build -t node-devops-app .
 
-      # stop old container
       sudo docker rm -f $(sudo docker ps -aq) || true
 
-      # run new container
       sudo docker run -d -p 3000:3000 node-devops-app
-  displayName: "Deploy to VM"
+  displayName: "Run Docker on VM"
