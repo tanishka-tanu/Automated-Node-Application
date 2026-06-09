@@ -18,7 +18,7 @@ steps:
 
 - script: |
     echo "Build successful 🚀"
-  displayName: 'CI Build Complete'
+  displayName: 'CI Done'
 
 # ---------------- CD PART ----------------
 - task: SSH@0
@@ -26,17 +26,25 @@ steps:
     sshEndpoint: 'azure-vm-ssh'
     runOptions: 'commands'
     commands: |
-      echo "Deploying to VM 🚀"
+      echo "Deploying 🚀"
 
+      # move to safe folder
+      cd /home/azureuser || exit
+
+      # remove old project
       rm -rf Automated-Node-Application
 
+      # clone fresh repo (PUBLIC so OK)
       git clone https://github.com/tanishka-tanu/Automated-Node-Application.git
 
       cd Automated-Node-Application
 
+      # rebuild docker
       sudo docker build -t node-devops-app .
 
+      # stop old container
       sudo docker rm -f $(sudo docker ps -aq) || true
 
+      # run new container
       sudo docker run -d -p 3000:3000 node-devops-app
   displayName: 'Deploy to Azure VM'
