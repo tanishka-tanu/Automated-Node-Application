@@ -27,9 +27,16 @@ steps:
     runOptions: 'commands'
     commands: |
       echo "Deploying to VM 🚀"
+
+      rm -rf Automated-Node-Application
+
+      git clone https://github.com/tanishka-tanu/Automated-Node-Application.git
+
       cd Automated-Node-Application
-      git pull origin main
+
       sudo docker build -t node-devops-app .
+
       sudo docker rm -f $(sudo docker ps -aq) || true
+
       sudo docker run -d -p 3000:3000 node-devops-app
   displayName: 'Deploy to Azure VM'
